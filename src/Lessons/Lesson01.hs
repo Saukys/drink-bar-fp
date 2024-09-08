@@ -19,7 +19,7 @@ c :: Char
 c = 'a'
 
 l :: [Integer]
-l = [1,2,3]
+l = [1, 2, 3]
 
 ll :: [Integer]
 ll = 0 : l
@@ -32,15 +32,15 @@ tt = (0, 0, 0)
 
 fst' :: (a, b, c) -> a
 fst' t =
-    case t of
-        (e1, _, _) -> e1
+  case t of
+    (e1, _, _) -> e1
 
 fst'' :: (a, b, c) -> a
 fst'' (e1, _, _) = e1
 
 head' :: [a] -> a
 head' [] = error "omg"
-head' (h:_) = h
+head' (h : _) = h
 
 add :: Integer -> Integer -> Integer
 add a b = a + b
