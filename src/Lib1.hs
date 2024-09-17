@@ -6,4 +6,4 @@ where
 -- | This function returns a list of words
 -- to be autocompleted in your program's repl.
 completions :: [String]
-completions = ["createDrink", "serveDrink", "listDrinks"]
+completions = ["create-drink", "serve-drink", "list-drinks"]
