@@ -1,3 +1,4 @@
+
 <drink> ::= <drink-name> <ingredients> <price>
 
 <drink-list> ::= "Drinks: " <drinks>
@@ -28,7 +29,7 @@
 
 <serve-drink> ::= "serve"  <drink>
 
-<create-drink> ::= "Create" <drink>
+<create-drink> ::= "Create" <drink> <ingredient-list>
 
 <list-drinks> ::= "Drinks: " <drinks>
 
