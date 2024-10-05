@@ -15,9 +15,9 @@ RUN apt-get update -y \
   && rm -rf /var/lib/apt/lists/
 
 ENV PATH=/root/.ghcup/bin:/root/.local/bin:$PATH \
-    BOOTSTRAP_HASKELL_NONINTERACTIVE=1 \
-    BOOTSTRAP_HASKELL_NO_UPGRADE=1 \
-    BOOTSTRAP_HASKELL_MINIMAL=1
+  BOOTSTRAP_HASKELL_NONINTERACTIVE=1 \
+  BOOTSTRAP_HASKELL_NO_UPGRADE=1 \
+  BOOTSTRAP_HASKELL_MINIMAL=1
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
 
