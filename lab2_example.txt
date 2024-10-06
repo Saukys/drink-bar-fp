@@ -1,0 +1,26 @@
+ghci> parseQuery "Serve Mojito 5.10EUR Ingredients: 60 ml Rum, 20 ml Juice" 
+Right (Serve (Drink {name = "Mojito", price = Price 5.1 EUR, ingredients = [Ingredient (Quantity 60.0 ML) "Rum",Ingredient (Quantity 20.0 ML) "Juice"]}))
+ghci> parseQuery "Menu" 
+Right Menu
+ghci> parseQuery "Menu aaaaaa" 
+Left "Invalid query"
+ghci> parseQuery "Ingredients" 
+Right Ingredients
+ghci> parseQuery "Create Mojito 5EUR Ingredients: 50 ml" 
+Left "Invalid ingredient"
+ghci> parseQuery "Create Mojito 5EUR Ingredients: 50 ml j, " 
+Right (Create (Drink {name = "Mojito", price = Price 5.0 EUR, ingredients = [Ingredient (Quantity 50.0 ML) "j"]}))
+ghci> parseQuery "Create Mojito 5EUR Ingredients: 50 ml j,,,,, " 
+Left "Invalid ingredient : "
+ghci> parseQuery "Create Mojito 5EUR Ingredients: 50 ml j " 
+Right (Create (Drink {name = "Mojito", price = Price 5.0 EUR, ingredients = [Ingredient (Quantity 50.0 ML) "j"]}))
+ghci> parseQuery "Create Mojito 5EUR Ingredients: 50 ml" 
+Left "Invalid ingredient"
+ghci> parseQuery "Create Mojito 5EUR 50ml" 
+Left "Invalid ingredients :50ml"
+ghci> parseQuery "Create Mojito 5EUR 50 ml" 
+Left "Invalid ingredients :50 ml"
+ghci> parseQuery "Create Mojito 5 EUR 50 ml" 
+Left "Invalid currency"
+ghci> parseQuery "Create Mojito 5EUR 50 ml" 
+Left "Invalid ingredients :50 ml"
