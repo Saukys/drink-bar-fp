@@ -16,6 +16,7 @@ module Lib2
     Currency (..),
     Unit (..),
     Parser,
+    Ingredients (..),
   )
 where
 
