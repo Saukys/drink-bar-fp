@@ -1,21 +1,17 @@
 
-<drink> ::= <drink-name> <ingredients> <price>
+<drink> ::= <indentifier> <ingredients> <price>
 
 <drinks> ::= <drink> | <drink> <drinks>
-
-<drink-name> ::= <identifier>
 
 <ingredients> ::= "Ingredients" <ingredient-list>
 
 <ingredient-list> ::= <ingredient> | <ingredient> <ingredient-list>
 
-<ingredient> ::= <quantity> <ingredient-name>
+<ingredient> ::= <quantity> <indentifier>
 
 <quantity> ::= <number> <unit>
 
 <unit> ::= "ml" | "oz" | "dash" | "splash"
-
-<ingredient-name> ::= "Liquor" | "Syrup" | "Juice" | "Garnish" | <identifier>
 
 <price> ::= <number> <currency>
 
@@ -27,9 +23,9 @@
 
 <serve-drink> ::= "Serve"  <drink>
 
-<add-ingredient> ::= "AddIngredient" <ingredient
+<add-ingredient> ::= "AddIngredient" <ingredient>
 
-<create> ::= "Create" <drink> <ingredient-list>
+<create> ::= "Create" <drink>
 
 <letter> ::= "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z" | "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z"
 <digit> ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"

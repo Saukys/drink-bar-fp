@@ -1,26 +1,24 @@
-ghci> parseQuery "Serve Mojito 5.10EUR Ingredients: 60 ml Rum, 20 ml Juice" 
-Right (Serve (Drink {name = "Mojito", price = Price 5.1 EUR, ingredients = [Ingredient (Quantity 60.0 ML) "Rum",Ingredient (Quantity 20.0 ML) "Juice"]}))
-ghci> parseQuery "Menu" 
+ghci> parseQuery "create drinkName 10.0 EUR ingredients: 10.0 ml ingredientName"
+Right (Create (Drink {name = "drinkName", price = Price 10.0 EUR, ingredients = Ingredients "ingredients: " [Ingredient (Quantity 10.0 ML) "ingredientName"]}))
+ghci> parseQuery "serve drinkName 10.0 EUR ingredients: 10.0 ml ingredientNam 20oz ing2"
+Left "Unparsed: 2"
+ghci> parseQuery "serve drinkName 10.0 EUR ingredients: 10.0 ml ingredientNam 20oz ing"
+Right (Serve (Drink {name = "drinkName", price = Price 10.0 EUR, ingredients = Ingredients "ingredients: " [Ingredient (Quantity 10.0 ML) "ingredientNam",Ingredient (Quantity 20.0 OZ) "ing"]}))
+ghci> parseQuery "serve drinkName 10.0 EUR ingredients: 10.0 ml ingredientNam 20oz ing"
+Right (Serve (Drink {name = "drinkName", price = Price 10.0 EUR, ingredients = Ingredients "ingredients: " [Ingredient (Quantity 10.0 ML) "ingredientNam",Ingredient (Quantity 20.0 OZ) "ing"]}))
+ghci> parseQuery "menu"
 Right Menu
-ghci> parseQuery "Menu aaaaaa" 
-Left "Invalid query"
-ghci> parseQuery "Ingredients" 
-Right Ingredients
-ghci> parseQuery "Create Mojito 5EUR Ingredients: 50 ml" 
-Left "Invalid ingredient"
-ghci> parseQuery "Create Mojito 5EUR Ingredients: 50 ml j, " 
-Right (Create (Drink {name = "Mojito", price = Price 5.0 EUR, ingredients = [Ingredient (Quantity 50.0 ML) "j"]}))
-ghci> parseQuery "Create Mojito 5EUR Ingredients: 50 ml j,,,,, " 
-Left "Invalid ingredient : "
-ghci> parseQuery "Create Mojito 5EUR Ingredients: 50 ml j " 
-Right (Create (Drink {name = "Mojito", price = Price 5.0 EUR, ingredients = [Ingredient (Quantity 50.0 ML) "j"]}))
-ghci> parseQuery "Create Mojito 5EUR Ingredients: 50 ml" 
-Left "Invalid ingredient"
-ghci> parseQuery "Create Mojito 5EUR 50ml" 
-Left "Invalid ingredients :50ml"
-ghci> parseQuery "Create Mojito 5EUR 50 ml" 
-Left "Invalid ingredients :50 ml"
-ghci> parseQuery "Create Mojito 5 EUR 50 ml" 
-Left "Invalid currency"
-ghci> parseQuery "Create Mojito 5EUR 50 ml" 
-Left "Invalid ingredients :50 ml"
+ghci> parseQuery "show igredients"
+Left "No query found"
+ghci> parseQuery "show ingredients"
+Right ShowIngredients
+ghci> parseQuery "no query"
+Left "No query found"
+ghci> parseQuery "add ingredient 12ml oz"
+Right (AddIngredient (Ingredient (Quantity 12.0 ML) "oz"))
+ghci> parseQuery "add ingredient 12 ml oz"
+Right (AddIngredient (Ingredient (Quantity 12.0 ML) "oz"))
+ghci> parseQuery "add ingredient 12 ml oz ,,,"
+Left "Unparsed:  ,,,"
+ghci> parseQuery "add ingredient 12 ml oz "
+Left "Unparsed:  "
