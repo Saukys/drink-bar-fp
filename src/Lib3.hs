@@ -1,19 +1,22 @@
 {-# LANGUAGE InstanceSigs #-}
+
 module Lib3
-    ( stateTransition,
+  ( stateTransition,
     StorageOp (..),
     storageOpLoop,
     parseCommand,
     parseStatements,
     marshallState,
-    renderStatements
-    ) where
+    renderStatements,
+  )
+where
 
-import Control.Concurrent ( Chan )
-import Control.Concurrent.STM(STM, TVar)
+import Control.Concurrent (Chan)
+import Control.Concurrent.STM (STM, TVar)
 import qualified Lib2
 
 data StorageOp = Save String (Chan ()) | Load (Chan String)
+
 -- | This function is started from main
 -- in a dedicated thread. It must be used to control
 -- file access in a synchronized manner: read requests
@@ -24,14 +27,16 @@ storageOpLoop :: Chan StorageOp -> IO ()
 storageOpLoop _ = do
   return $ error "Not implemented 1"
 
-data Statements = Batch [Lib2.Query] |
-               Single Lib2.Query
-               deriving (Show, Eq)
+data Statements
+  = Batch [Lib2.Query]
+  | Single Lib2.Query
+  deriving (Show, Eq)
 
-data Command = StatementCommand Statements |
-               LoadCommand |
-               SaveCommand
-               deriving (Show, Eq)
+data Command
+  = StatementCommand Statements
+  | LoadCommand
+  | SaveCommand
+  deriving (Show, Eq)
 
 -- | Parses user's input.
 parseCommand :: String -> Either String (Command, String)
@@ -52,7 +57,7 @@ marshallState _ = error "Not implemented 4"
 -- | Renders Statements into a String which
 -- can be parsed back into Statements by parseStatements
 -- function. The String returned by this function must be used
--- as persist program's state in a file. 
+-- as persist program's state in a file.
 -- Must have a property test
 -- for all s: parseStatements (renderStatements s) == Right(s, "")
 renderStatements :: Statements -> String
@@ -68,6 +73,9 @@ renderStatements _ = error "Not implemented 5"
 -- State update must be executed atomically (STM).
 -- Right contains an optional message to print, updated state
 -- is stored in transactinal variable
-stateTransition :: TVar Lib2.State -> Command -> Chan StorageOp ->
-                   IO (Either String (Maybe String))
+stateTransition ::
+  TVar Lib2.State ->
+  Command ->
+  Chan StorageOp ->
+  IO (Either String (Maybe String))
 stateTransition _ _ ioChan = return $ Left "Not implemented 6"
