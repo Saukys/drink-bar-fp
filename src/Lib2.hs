@@ -23,7 +23,7 @@ where
 import qualified Data.Char as C
 import qualified Data.List as L
 
-data Query = Create Drink | Serve Drink | Menu | ShowIngredients | AddIngredient Ingredient | Money
+data Query = Create Drink | Serve Drink | Menu | ShowIngredients | AddIngredient Ingredient | Money | Debug
   deriving (Show, Eq)
 
 data Currency = USD | EUR | JPY | GBP
@@ -77,6 +77,13 @@ or6 a b c d e f = \input ->
                   case e input of
                     Right (v5, r5) -> Right (v5, r5)
                     Left _ -> f input
+
+orN :: [Parser a] -> Parser a
+orN [] = \_ -> Left "No parsers provided"
+orN (h : t) = \input ->
+  case h input of
+    Right (v, r) -> Right (v, r)
+    Left _ -> orN t input
 
 parseChar :: Char -> Parser Char
 parseChar c [] = Left ("Cannot find " ++ [c] ++ " in an empty input")
@@ -210,54 +217,48 @@ or2' (a : _) b = \input ->
 parseDrink :: Parser Drink
 parseDrink = and3' Drink parseWord parsePrice parseIngredients
 
-parseCreate :: Parser Query
-parseCreate = \input ->
-  case parseWord' "create" input of
-    Right (_, rest) -> case parseDrink rest of
-      Right (drink, rest1) -> Right (Create drink, rest1)
-      Left e -> Left e
+and2 :: (a -> b -> c) -> Parser a -> Parser b -> Parser c
+and2 f a b = \input ->
+  case a input of
+    Right (v1, r1) ->
+      case b r1 of
+        Right (v2, r2) -> Right (f v1 v2, r2)
+        Left e2 -> Left e2
+    Left e1 -> Left e1
+
+is :: b -> Parser a -> Parser b
+is b a = \input ->
+  case a input of
+    Right (_, r) -> Right (b, r)
     Left e -> Left e
+
+parseCreate :: Parser Query
+parseCreate = and2 (\_ drink -> Create drink) (parseWord' "create") parseDrink
 
 parseServe :: Parser Query
-parseServe = \input ->
-  case parseWord' "serve" input of
-    Right (_, rest) -> case parseDrink rest of
-      Right (drink, rest1) -> Right (Serve drink, rest1)
-      Left e -> Left e
-    Left e -> Left e
+parseServe = and2 (\_ drink -> Serve drink) (parseWord' "serve") parseDrink
 
 parseMenu :: Parser Query
-parseMenu = \input ->
-  case parseWord' "menu" input of
-    Right (_, rest) -> Right (Menu, rest)
-    Left e -> Left e
+parseMenu = is Menu (parseWord' "menu")
 
 parseShowIngredients :: Parser Query
-parseShowIngredients = \input ->
-  case parseWord' "show ingredients" input of
-    Right (_, rest) -> Right (ShowIngredients, rest)
-    Left e -> Left e
+parseShowIngredients = is ShowIngredients (parseWord' "show ingredients")
 
 parseAddIngredient :: Parser Query
-parseAddIngredient = \input ->
-  case parseWord' "add ingredient" input of
-    Right (_, rest) -> case parseIngredient rest of
-      Right (ingredient, rest1) -> Right (AddIngredient ingredient, rest1)
-      Left e -> Left e
-    Left e -> Left e
+parseAddIngredient = and2 (\_ ingredient -> AddIngredient ingredient) (parseWord' "add") parseIngredient
 
 parseMoney :: Parser Query
-parseMoney = \input ->
-  case parseWord' "money" input of
-    Right (_, rest) -> Right (Money, rest)
-    Left e -> Left e
+parseMoney = is Money (parseWord' "money")
+
+parseDebug :: Parser Query
+parseDebug = is Debug (parseWord' "debug")
 
 -- User Input
 parseQuery :: String -> Either String Query
-parseQuery st = case or6 parseCreate parseServe parseMenu parseShowIngredients parseAddIngredient parseMoney st of
+parseQuery st = case orN [parseCreate, parseServe, parseMenu, parseShowIngredients, parseAddIngredient, parseMoney, parseDebug] st of
   Right (query, "") -> Right query
   Right (_, rest) -> Left $ "Unparsed: " ++ rest
-  Left e -> Left "No query found"
+  Left e -> Left $ "No query found :" ++ e
 
 emptyState :: State
 emptyState = State {money = 0, inventory = [], menu = []}
@@ -281,6 +282,7 @@ stateTransition st eitherQuery = case eitherQuery of
       Nothing -> Left "Drink not found"
     AddIngredient ingredient -> Right (Nothing, st {inventory = ingredient : inventory st})
     Money -> Right (Just $ show $ money st, st)
+    Debug -> Right (Just $ show st, st)
 
 findDrink :: Drink -> [Drink] -> Maybe Drink
 findDrink _ [] = Nothing
