@@ -21,6 +21,7 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
+- directory
 
 ghc-options:
 - -Wall
@@ -88,6 +89,7 @@ tests:
     - tasty
     - tasty-hunit
     - tasty-quickcheck
+    - stm
   fp2024-doctest:
     main:                Doctest.hs
     source-dirs:         doctest
@@ -97,3 +99,4 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - doctest
+    - stm

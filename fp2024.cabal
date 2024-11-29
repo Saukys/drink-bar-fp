@@ -36,6 +36,7 @@ library
       Lib1
       Lib2
       Lib3
+      Parsers
   other-modules:
       Paths_fp2024
   autogen-modules:
@@ -46,6 +47,7 @@ library
   build-depends:
       async
     , base >=4.7 && <5
+    , directory
     , random
     , stm
   default-language: Haskell2010
@@ -61,6 +63,7 @@ executable fp2024-one
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , directory
     , fp2024
     , repline
   default-language: Haskell2010
@@ -76,6 +79,7 @@ executable fp2024-three
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , directory
     , fp2024
     , mtl
     , repline
@@ -93,6 +97,7 @@ executable fp2024-two
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , directory
     , fp2024
     , mtl
     , repline
@@ -110,7 +115,9 @@ test-suite fp2024-doctest
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , directory
     , doctest
+    , stm
   default-language: Haskell2010
 
 test-suite fp2024-test
@@ -125,7 +132,9 @@ test-suite fp2024-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , directory
     , fp2024
+    , stm
     , tasty
     , tasty-hunit
     , tasty-quickcheck

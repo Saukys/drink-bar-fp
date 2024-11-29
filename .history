@@ -1,0 +1,7 @@
+debug
+add_money 200 EUR;
+END
+add_money 200 EUR;
+add_money 100 EUR
+BEGIN
+:paste

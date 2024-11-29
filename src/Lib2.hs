@@ -20,36 +20,7 @@ module Lib2
   )
 where
 
-import qualified Data.Char as C
-import qualified Data.List as L
-
-data Query = Create Drink | Serve Drink | Menu | ShowIngredients | AddIngredient Ingredient | Money | Debug
-  deriving (Show, Eq)
-
-data Currency = USD | EUR | JPY | GBP
-  deriving (Show, Eq)
-
-data Drink = Drink
-  { name :: String,
-    price :: Price,
-    ingredients :: Ingredients
-  }
-  deriving (Show, Eq)
-
-data Price = Price Double Currency
-  deriving (Show, Eq)
-
-data Ingredients = Ingredients String [Ingredient]
-  deriving (Show, Eq)
-
-data Unit = ML | OZ | Dash | Splash
-  deriving (Show, Eq)
-
-data Quantity = Quantity Double Unit
-  deriving (Show, Eq)
-
-data Ingredient = Ingredient Quantity String
-  deriving (Show, Eq)
+import Parsers
 
 data State = State
   { money :: Double, -- in EUR
@@ -58,207 +29,12 @@ data State = State
   }
   deriving (Show, Eq)
 
-type Parser a = String -> Either String (a, String)
-
-or6 :: Parser a -> Parser a -> Parser a -> Parser a -> Parser a -> Parser a -> Parser a
-or6 a b c d e f = \input ->
-  case a input of
-    Right (v1, r1) -> Right (v1, r1)
-    Left _ ->
-      case b input of
-        Right (v2, r2) -> Right (v2, r2)
-        Left _ ->
-          case c input of
-            Right (v3, r3) -> Right (v3, r3)
-            Left _ ->
-              case d input of
-                Right (v4, r4) -> Right (v4, r4)
-                Left _ ->
-                  case e input of
-                    Right (v5, r5) -> Right (v5, r5)
-                    Left _ -> f input
-
-orN :: [Parser a] -> Parser a
-orN [] = \_ -> Left "No parsers provided"
-orN (h : t) = \input ->
-  case h input of
-    Right (v, r) -> Right (v, r)
-    Left _ -> orN t input
-
-parseChar :: Char -> Parser Char
-parseChar c [] = Left ("Cannot find " ++ [c] ++ " in an empty input")
-parseChar c s@(h : t) = if c == h then Right (c, t) else Left (c : " is not found in " ++ s)
-
-parseWord :: Parser String
-parseWord [] = Left "Empty string"
-parseWord str =
-  let (_, rest1) = case parseWhitespaces str of
-        Right (s, r) -> (s, r)
-        Left _ -> ("", str)
-      word = L.takeWhile C.isLetter rest1
-      rest = drop (length word) rest1
-   in case word of
-        [] -> Left "No word found"
-        _ -> Right (word, rest)
-
-parseWhitespaces :: Parser String
-parseWhitespaces [] = Right ("", [])
-parseWhitespaces s@(h : t) = if C.isSpace h then Right (" ", t) else Right ("", s)
-
-parseWord' :: String -> Parser String
-parseWord' word = \input ->
-  let (_, rest1) = case parseWhitespaces input of
-        Right (s, r) -> (s, r)
-        Left _ -> ("", input)
-      (parsedWord, rest) = L.splitAt (length word) rest1
-   in if parsedWord == word
-        then Right (parsedWord, rest)
-        else Left $ word ++ " not found in " ++ input
-
-and3' :: (a -> b -> c -> d) -> Parser a -> Parser b -> Parser c -> Parser d
-and3' d a b c = \input ->
-  case a input of
-    Right (v1, r1) ->
-      case b r1 of
-        Right (v2, r2) ->
-          case c r2 of
-            Right (v3, r3) -> Right (d v1 v2 v3, r3)
-            Left e3 -> Left e3
-        Left e2 -> Left e2
-    Left e1 -> Left e1
-
-and2' :: (a -> b -> c) -> Parser a -> Parser b -> Parser c
-and2' c a b = \input ->
-  case a input of
-    Right (v1, r1) ->
-      case b r1 of
-        Right (v2, r2) -> Right (c v1 v2, r2)
-        Left e2 -> Left e2
-    Left e1 -> Left e1
-
-parseDouble :: Parser Double
-parseDouble [] = Left "Empty string"
-parseDouble str =
-  let (_, rest1) = case parseWhitespaces str of
-        Right (s, r) -> (s, r)
-        Left _ -> ("", str)
-      number = L.takeWhile C.isDigit rest1
-      rest = drop (length number) rest1
-      (dot, rest2) = case parseChar '.' rest of
-        Right (d, r) -> (d, r)
-        Left _ -> ('.', rest)
-      decimal = L.takeWhile C.isDigit rest2
-      rest3 = drop (length decimal) rest2
-   in case number of
-        [] -> Left "No number found"
-        _ -> case decimal of
-          [] -> Right (read number, rest2)
-          _ -> Right (read $ number ++ [dot] ++ decimal, rest3)
-
-parseCurrency :: Parser Currency
-parseCurrency = \input ->
-  case parseWord input of
-    Right (word, rest) -> case word of
-      "USD" -> Right (USD, rest)
-      "EUR" -> Right (EUR, rest)
-      "JPY" -> Right (JPY, rest)
-      "GBP" -> Right (GBP, rest)
-      _ -> Left "Currency not found"
-    Left e -> Left e
-
-parsePrice :: Parser Price
-parsePrice = and2' Price parseDouble parseCurrency
-
-parseUnit :: Parser Unit
-parseUnit = \input ->
-  case parseWord input of
-    Right (word, rest) -> case word of
-      "ml" -> Right (ML, rest)
-      "oz" -> Right (OZ, rest)
-      "dash" -> Right (Dash, rest)
-      "splash" -> Right (Splash, rest)
-      _ -> Left "Unit not found"
-    Left e -> Left e
-
-parseQuantity :: Parser Quantity
-parseQuantity = and2' Quantity parseDouble parseUnit
-
-parseIngredient :: Parser Ingredient
-parseIngredient = and2' Ingredient parseQuantity parseWord
-
-parseIngredients :: Parser Ingredients
-parseIngredients = and2' Ingredients (parseWord' "ingredients: ") parseIngredientList
-
-parseIngredientList :: Parser [Ingredient]
-parseIngredientList = or2' [parseIngredient] parseIngredientList'
-
-parseIngredientList' :: Parser [Ingredient]
-parseIngredientList' = and2'' parseIngredient parseIngredientList
-
-and2'' :: Parser a -> Parser [a] -> Parser [a]
-and2'' a b = \input ->
-  case a input of
-    Right (v1, r1) ->
-      case b r1 of
-        Right (v2, r2) -> Right (v1 : v2, r2)
-        Left e2 -> Left e2
-    Left e1 -> Left e1
-
-or2' :: [Parser a] -> Parser [a] -> Parser [a]
-or2' [] b = \input -> b input
-or2' (a : _) b = \input ->
-  case b input of
-    Right (v1, r1) -> Right (v1, r1)
-    Left e1 ->
-      case a input of
-        Right (v2, r2) -> Right ([v2], r2)
-        Left e2 -> Left (e1 ++ ", " ++ e2)
-
-parseDrink :: Parser Drink
-parseDrink = and3' Drink parseWord parsePrice parseIngredients
-
-and2 :: (a -> b -> c) -> Parser a -> Parser b -> Parser c
-and2 f a b = \input ->
-  case a input of
-    Right (v1, r1) ->
-      case b r1 of
-        Right (v2, r2) -> Right (f v1 v2, r2)
-        Left e2 -> Left e2
-    Left e1 -> Left e1
-
-is :: b -> Parser a -> Parser b
-is b a = \input ->
-  case a input of
-    Right (_, r) -> Right (b, r)
-    Left e -> Left e
-
-parseCreate :: Parser Query
-parseCreate = and2 (\_ drink -> Create drink) (parseWord' "create") parseDrink
-
-parseServe :: Parser Query
-parseServe = and2 (\_ drink -> Serve drink) (parseWord' "serve") parseDrink
-
-parseMenu :: Parser Query
-parseMenu = is Menu (parseWord' "menu")
-
-parseShowIngredients :: Parser Query
-parseShowIngredients = is ShowIngredients (parseWord' "show ingredients")
-
-parseAddIngredient :: Parser Query
-parseAddIngredient = and2 (\_ ingredient -> AddIngredient ingredient) (parseWord' "add") parseIngredient
-
-parseMoney :: Parser Query
-parseMoney = is Money (parseWord' "money")
-
-parseDebug :: Parser Query
-parseDebug = is Debug (parseWord' "debug")
-
--- User Input
 parseQuery :: String -> Either String Query
-parseQuery st = case orN [parseCreate, parseServe, parseMenu, parseShowIngredients, parseAddIngredient, parseMoney, parseDebug] st of
-  Right (query, "") -> Right query
-  Right (_, rest) -> Left $ "Unparsed: " ++ rest
-  Left e -> Left $ "No query found :" ++ e
+parseQuery st =
+  case parse parseTask st of
+    Left e -> Left e
+    Right (query, "") -> Right query
+    Right (_, rest) -> Left $ "Unexpected input: " ++ rest
 
 emptyState :: State
 emptyState = State {money = 0, inventory = [], menu = []}
@@ -271,18 +47,30 @@ emptyState = State {money = 0, inventory = [], menu = []}
 stateTransition :: State -> Query -> Either String (Maybe String, State)
 stateTransition st eitherQuery = case eitherQuery of
   query -> case query of
-    Menu -> Right (Just $ show $ menu st, st)
+    Menu -> Right (Just ("Menu" ++ show (menu st)), st)
     ShowIngredients -> Right (Just $ show $ inventory st, st)
-    Create drink -> Right (Nothing, st {menu = drink : menu st})
+    Create drink -> Right (Just ("Created:" ++ show drink), st {menu = drink : menu st})
     Serve drink -> case findDrink drink (menu st) of
       Just d ->
         if canServe d st
           then Right (Just $ "Serving " ++ name d, removeIngredients d (addMoney (price d) st))
           else Left $ "no ingredients"
       Nothing -> Left "Drink not found"
-    AddIngredient ingredient -> Right (Nothing, st {inventory = ingredient : inventory st})
+    AddIngredient ingredient -> Right (Just $ "Added" ++ show ingredient, st {inventory = ingredient : inventory st})
     Money -> Right (Just $ show $ money st, st)
     Debug -> Right (Just $ show st, st)
+    MoneyAdd p -> Right (Just $ "Added " ++ show p, addMoney p st)
+    Sequence queryList ->
+      foldl processQuery (Right (Just "", st)) queryList
+      where
+        processQuery :: Either String (Maybe String, State) -> Query -> Either String (Maybe String, State)
+        processQuery (Left err) _ = Left err
+        processQuery (Right (accMsg, currentState)) nextQuery =
+          case stateTransition currentState nextQuery of
+            Left err -> Left err
+            Right (Just result, newState) ->
+              Right (combineMessages accMsg (Just result), newState)
+            Right (Nothing, newState) -> Right (accMsg, newState)
 
 findDrink :: Drink -> [Drink] -> Maybe Drink
 findDrink _ [] = Nothing
@@ -301,3 +89,9 @@ removeIngredients :: Drink -> State -> State
 removeIngredients drink st = st {inventory = filter (\i -> i `notElem` ingList) (inventory st)}
   where
     (Ingredients _ ingList) = ingredients drink
+
+combineMessages :: Maybe String -> Maybe String -> Maybe String
+combineMessages Nothing Nothing = Nothing
+combineMessages (Just msg) Nothing = Just msg
+combineMessages Nothing (Just msg) = Just msg
+combineMessages (Just msg1) (Just msg2) = Just (msg1 ++ "\n" ++ msg2)
