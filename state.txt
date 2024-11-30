@@ -1,6 +1,3 @@
 BEGIN
-add( 10.0 ml "ing 1");
-add( 30.0 ml "ing 2");
-create( "drink" 20.5 EUR ingredients: 10.0 ml "ing 1", 30.0 ml "ing 2");
-add_money( 300.0 EUR);
+add_money( 0.0 EUR);
 END

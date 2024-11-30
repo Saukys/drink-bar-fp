@@ -55,6 +55,6 @@ unitTests =
         let statements = Lib3.Batch [Lib2.AddIngredient (Lib2.Ingredient (Lib2.Quantity 10.0 Lib2.ML) "ingredientName"), Lib2.MoneyAdd (Lib2.Price 10.0 Lib2.EUR)]
         let rendered = Lib3.renderStatements statements
         let parsed = Lib3.parseStatements rendered
-        parsed @?= Right (statements, ""), 
+        parsed @?= Right (statements, "")
     ]
     
