@@ -39,7 +39,9 @@ library:
   dependencies:
   - random
   - stm
+  - transformers
   - async
+  - mtl
 
 executables:
   fp2024-one:

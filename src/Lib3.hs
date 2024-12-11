@@ -61,7 +61,9 @@ data Command
 
 -- | Parses user's input.
 parseCommand :: String -> Either String (Command, String)
-parseCommand = parse (StatementCommand <$> statements <|> parseLoad <|> parseSave)
+parseCommand str = case parse (StatementCommand <$> statements <|> parseLoad <|> parseSave) str of
+  (Left e, _) -> Left e
+  (Right c, r) -> Right (c, r)
 
 parseLoad :: Parser Command
 parseLoad = do
@@ -78,8 +80,10 @@ parseSave = do
 -- Reuse Lib2 as much as you can.
 -- You can change Lib2.parseQuery signature if needed.
 parseStatements :: String -> Either String (Statements, String)
-parseStatements = parse statements
-
+parseStatements str = case parse statements str of
+  (Left e, _) -> Left e
+  (Right s, r) -> Right (s, r)
+  
 statements :: Parser Statements
 statements =
   ( do
