@@ -1,0 +1,32 @@
+>>> :paste
+-- Entering multi-line mode. Press <Ctrl-D> to finish.
+| BEGIN
+| create(drink 20.5 EUR ingredients: 10ml "ing 1", 30 ml "ing 2");
+| add( 30 ml "ing 2");
+| add( 10 ml "ing 1");
+| add_money(300 EUR);
+| menu();
+| END
+| 
+Created:Drink {name = "drink", price = Price 20.5 EUR, ingredients = Ingredients "" [Ingredient (Quantity 10.0 ML) "ing 1",Ingredient (Quantity 30.0 ML) "ing 2"]}
+AddedIngredient (Quantity 30.0 ML) "ing 2"
+AddedIngredient (Quantity 10.0 ML) "ing 1"
+Added Price 300.0 EUR
+Menu[Drink {name = "drink", price = Price 20.5 EUR, ingredients = Ingredients "" [Ingredient (Quantity 10.0 ML) "ing 1",Ingredient (Quantity 30.0 ML) "ing 2"]}]
+
+
+
+>>> debug()
+State {money = 300.0, inventory = [Ingredient (Quantity 10.0 ML) "ing 1",Ingredient (Quantity 30.0 ML) "ing 2"], menu = [Drink {name = "drink", price = Price 20.5 EUR, ingredients = Ingredients "" [Ingredient (Quantity 10.0 ML) "ing 1",Ingredient (Quantity 30.0 ML) "ing 2"]}]}
+>>> save
+State saved successfully
+-- rebuilding --
+Welcome! Press [TAB] for auto completion, type ':paste' for multiline input
+>>> load
+AddedIngredient (Quantity 10.0 ML) "ing 1"
+AddedIngredient (Quantity 30.0 ML) "ing 2"
+Created:Drink {name = "drink", price = Price 20.5 EUR, ingredients = Ingredients "" [Ingredient (Quantity 10.0 ML) "ing 1",Ingredient (Quantity 30.0 ML) "ing 2"]}
+Added Price 300.0 EUR
+
+State {money = 300.0, inventory = [Ingredient (Quantity 30.0 ML) "ing 2",Ingredient (Quantity 10.0 ML) "ing 1"], menu = [Drink {name = "drink", price = Price 20.5 EUR, ingredients = Ingredients "" [Ingredient (Quantity 10.0 ML) "ing 1",Ingredient (Quantity 30.0 ML) "ing 2"]}]}
+
