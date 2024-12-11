@@ -54,8 +54,8 @@ library
     , async
     , base >=4.7 && <5
     , deepseq
-    , free
     , directory
+    , free
     , random
     , stm
     , strict
@@ -74,6 +74,7 @@ executable fp2024-four-client
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , directory
     , fp2024
     , lens
     , repline
@@ -92,6 +93,7 @@ executable fp2024-four-server
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , directory
     , fp2024
     , repline
     , scotty
