@@ -32,9 +32,9 @@ data State = State
 parseQuery :: String -> Either String Query
 parseQuery st =
   case parse parseTask st of
-    Left e -> Left e
-    Right (query, "") -> Right query
-    Right (_, rest) -> Left $ "Unexpected input: " ++ rest
+    (Left e, _) -> Left e
+    (Right query, "") -> Right query
+    (Right _, rest) -> Left $ "Unexpected input: " ++ rest
 
 emptyState :: State
 emptyState = State {money = 0, inventory = [], menu = []}
