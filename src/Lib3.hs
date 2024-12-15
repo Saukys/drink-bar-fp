@@ -83,7 +83,7 @@ parseStatements :: String -> Either String (Statements, String)
 parseStatements str = case parse statements str of
   (Left e, _) -> Left e
   (Right s, r) -> Right (s, r)
-  
+
 statements :: Parser Statements
 statements =
   ( do
@@ -129,11 +129,11 @@ renderQuery = \case
   Lib2.Create d -> "create( " ++ renderDrink d ++ ")"
   Lib2.Serve d -> "serve( " ++ renderDrink d ++ ")"
   Lib2.Menu -> "menu( " ++ ")"
-  Lib2.ShowIngredients -> "show_ingredients( " ++ ")"
+  Lib2.ShowIngredients -> "ingredients( " ++ ")"
   Lib2.AddIngredient i -> "add( " ++ renderIngredient i ++ ")"
-  Lib2.Money -> "money( " ++ ")"
+  Lib2.Money -> "profits( " ++ ")"
   Lib2.Debug -> "debug( " ++ ")"
-  Lib2.MoneyAdd p -> "add_money( " ++ renderPrice p ++ ")"
+  Lib2.MoneyAdd p -> "earn_money( " ++ renderPrice p ++ ")"
 
 renderDrink :: Lib2.Drink -> String
 renderDrink (Lib2.Drink n p i) = "\"" ++ n ++ "\" " ++ renderPrice p ++ " " ++ renderIngredients i

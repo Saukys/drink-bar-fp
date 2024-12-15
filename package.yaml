@@ -94,6 +94,8 @@ executables:
     - repline
     - lens
     - wreq
+    - free
+    - mtl
     - bytestring
     - string-conversions
   fp2024-four-server:
@@ -105,6 +107,7 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - fp2024
+    - stm 
     - repline
     - scotty
     - string-conversions

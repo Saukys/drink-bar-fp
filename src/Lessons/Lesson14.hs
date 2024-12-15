@@ -41,33 +41,7 @@ instance Monad m => Monad (EitherT e m) where
       Left e1 -> return $ Left e1
       Right r1 -> runEitherT (k r1)
 
-type Parser a = EitherT String (State String) a
+
 
 throwE :: Monad m => e -> EitherT e m a
 throwE e = EitherT $ return $ Left e
-
-parseChar :: Char -> Parser Char
-parseChar a = do
-    input <- lift get
-    case input of
-        [] -> throwE "Empty input"
-        (x:xs) -> if x == a
-            then lift $ put xs >> return x
-            else
-                throwE $ a:" is not found"
-
-parse :: Parser a -> String -> (Either String a, String)
-parse parser = runState (runEitherT parser)
-
-
--- >>> parse (parseTwoSameChars 'a') ""
--- (Left "Empty input","")
--- >>> parse (parseTwoSameChars 'a') "a"
--- (Left "Empty input","")
--- >>> parse (parseTwoSameChars 'a') "aaa"
--- (Right ('a','a'),"a")
-parseTwoSameChars :: Char -> Parser (Char, Char)
-parseTwoSameChars c = do
-  c1 <- parseChar c
-  c2 <- parseChar c
-  return (c1, c2)
