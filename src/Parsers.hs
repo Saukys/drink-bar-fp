@@ -3,6 +3,7 @@
 {-# HLINT ignore "Use <$>" #-}
 {-# HLINT ignore "Use lambda-case" #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wno-missing-export-lists #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 
@@ -31,9 +32,15 @@ module Parsers
     parseInt,
     parseChar,
     char,
+    Parser,
+    parse
   )
 where
 
+import Control.Monad.Trans.Except
+import Control.Monad.Trans.State
+import Control.Monad.Except (throwError)
+import Control.Monad.Trans.Class (lift)
 import Control.Applicative (Alternative (empty), optional, (<|>))
 import Data.Char (isDigit)
 
@@ -65,35 +72,10 @@ data Quantity = Quantity Double Unit
 data Ingredient = Ingredient Quantity String
   deriving (Show, Eq)
 
-newtype Parser a = Parser {parse :: String -> Either String (a, String)}
+type Parser a = ExceptT String (State String) a
 
-instance Functor Parser where
-  fmap :: (a -> b) -> Parser a -> Parser b
-  fmap f p = do
-    a <- p
-    return $ f a
-
-instance Applicative Parser where
-  pure :: a -> Parser a
-  pure x = Parser $ \str -> Right (x, str)
-  (<*>) :: Parser (a -> b) -> Parser a -> Parser b
-  pf <*> pa = Parser $ \str -> case parse pf str of
-    Left e -> Left e
-    Right (f, r) -> parse (f <$> pa) r
-
-instance Alternative Parser where
-  empty :: Parser a
-  empty = Parser $ \_ -> Left "Failed to parse"
-  (<|>) :: Parser a -> Parser a -> Parser a
-  (<|>) p1 p2 = Parser $ \str -> case parse p1 str of
-    Right (v, r) -> Right (v, r)
-    Left _ -> parse p2 str
-
-instance Monad Parser where
-  (>>=) :: Parser a -> (a -> Parser b) -> Parser b
-  (>>=) pa f = Parser $ \str -> case parse pa str of
-    Left e -> Left e
-    Right (a, r) -> parse (f a) r
+parse :: Parser a -> String -> (Either String a, String)
+parse parser = runState (runExceptT parser)
 
 parseTaskList :: Parser [Query]
 parseTaskList = do
@@ -116,7 +98,7 @@ parseTask =
 
 parseMoneyAdd :: Parser Query
 parseMoneyAdd = do
-  _ <- parseLiteral "add_money"
+  _ <- parseLiteral "earn_money"
   _ <- parseLiteral "("
   p <- parsePrice
   _ <- parseLiteral ")"
@@ -147,7 +129,7 @@ parseMenu = do
 
 parseShowIngredients :: Parser Query
 parseShowIngredients = do
-  _ <- parseLiteral "show_ingredients"
+  _ <- parseLiteral "ingredients"
   _ <- parseLiteral "("
   _ <- parseLiteral ")"
   return ShowIngredients
@@ -162,7 +144,7 @@ parseAddIngredient = do
 
 parseMoney :: Parser Query
 parseMoney = do
-  _ <- parseLiteral "money"
+  _ <- parseLiteral "profits"
   _ <- parseLiteral "("
   _ <- parseLiteral ")"
   return Money
@@ -235,10 +217,14 @@ parseUnit = do
 
 -- Utility Parsers
 sat :: (Char -> Bool) -> Parser Char
-sat p = Parser $ \case
-  [] -> Left "Empty String"
-  s@(x : xs) -> if p x then Right (x, xs) else Left $ "Could not recognize: " ++ s
-
+sat p = do
+  input <- lift get
+  case input of
+    [] -> throwError "Empty String"
+    (x:xs) -> if p x
+              then lift (put xs) >> return x
+              else throwError $ "Could not recognize: " ++ [x]
+              
 char :: Char -> Parser Char
 char c = sat (== c)
 
@@ -249,45 +235,49 @@ skipSpaces :: String -> String
 skipSpaces = dropWhile (== ' ')
 
 skipSpaces' :: Parser ()
-skipSpaces' = Parser $ \input ->
-  let input' = dropWhile (== ' ') input
-   in Right ((), input')
+skipSpaces' = lift (modify (dropWhile (== ' ')))
 
 parseLiteral :: String -> Parser String
 parseLiteral [] = return []
 parseLiteral (x : xs) = do
-  _ <- skipSpaces'
+  skipSpaces'
   _ <- parseChar x
   parseLiteral xs
 
 parseFloat :: Parser Float
-parseFloat = Parser $ \input ->
+parseFloat = do
+  input <- lift get
   let (digits, rest) = span (\c -> c == '.' || isDigit c) (skipSpaces input)
-   in if null digits
-        then Left "Expected a float"
-        else Right (read digits, rest)
+  if null digits
+    then throwError "Expected a float"
+    else do
+      lift (put rest)
+      return (read digits)
+
 
 parseString :: Parser String
-parseString = Parser $ \input ->
+parseString = do
+  input <- lift get
   let input' = skipSpaces input
-   in if null input'
-        then Right ("", "")
-        else
-          if head input' == '"'
-            then parseQuotedString (tail input')
-            else
-              let (str, rest) = span (\c -> c /= ' ' && c /= ',' && c /= '(' && c /= ')') input'
-               in Right (str, rest)
+  if null input'
+    then return ""
+    else if head input' == '"'
+         then parseQuotedString (tail input')
+         else let (str, rest) = span (\c -> c /= ' ' && c /= ',' && c /= '(' && c /= ')') input'
+              in lift (put rest) >> return str
   where
-    parseQuotedString [] = Left "Unexpected end of input in quoted string"
-    parseQuotedString ('"' : rest) = Right ("", rest)
-    parseQuotedString (x : rest) = case parseQuotedString rest of
-      Right (str, rest') -> Right (x : str, rest')
-      Left err -> Left err
+    parseQuotedString [] = throwError "Unexpected end of input in quoted string"
+    parseQuotedString ('"' : rest) = lift (put rest) >> return ""
+    parseQuotedString (x : rest) = do
+      str <- parseQuotedString rest
+      return (x : str)
 
 parseInt :: Parser Int
-parseInt = Parser $ \input ->
+parseInt = do
+  input <- lift get
   let (digits, rest) = span isDigit (skipSpaces input)
-   in if null digits
-        then Left "Expected an integer"
-        else Right (read digits, rest)
+  if null digits
+    then throwError "Expected an integer"
+    else do
+      lift (put rest)
+      return (read digits)

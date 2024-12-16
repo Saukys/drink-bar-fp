@@ -30,11 +30,14 @@ data State = State
   deriving (Show, Eq)
 
 parseQuery :: String -> Either String Query
-parseQuery st =
-  case parse parseTask st of
-    Left e -> Left e
-    Right (query, "") -> Right query
-    Right (_, rest) -> Left $ "Unexpected input: " ++ rest
+parseQuery s =
+  case parse parseTaskList s of
+    (Left e, _) -> Left e
+    (Right qs, r) -> if null r
+      then case qs of
+        [q] -> Right q
+        _ -> Right (Sequence qs)
+      else Left ("Unrecognized characters: " ++ r)
 
 emptyState :: State
 emptyState = State {money = 0, inventory = [], menu = []}

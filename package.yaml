@@ -40,11 +40,13 @@ library:
   - free
   - random
   - stm
+  - transformers
   - async
   - QuickCheck
   - transformers
   - strict
   - deepseq
+  - mtl
 
 executables:
   fp2024-one:
@@ -92,6 +94,8 @@ executables:
     - repline
     - lens
     - wreq
+    - free
+    - mtl
     - bytestring
     - string-conversions
   fp2024-four-server:
@@ -103,6 +107,7 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - fp2024
+    - stm 
     - repline
     - scotty
     - string-conversions
