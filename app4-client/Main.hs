@@ -1,3 +1,4 @@
+
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveAnyClass #-}
 
@@ -174,3 +175,4 @@ main = do
                 putStrLn ingredients
                 print state
             _ -> putStrLn "Usage: stack exec fp2024-four-client (http|http-batch|in-memory)"
+

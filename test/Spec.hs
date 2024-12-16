@@ -1,9 +1,10 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+import Test.Tasty ( TestTree, defaultMain, testGroup )
+import Test.Tasty.HUnit ( testCase, (@?=) )
 import Test.Tasty.QuickCheck as QC
 
 import Data.List
 import Data.Ord
-
 import Lib2 qualified
 import Lib3 qualified
 import Test.Tasty (TestTree, defaultMain, testGroup)
@@ -18,6 +19,7 @@ tests :: TestTree
 tests = testGroup "Tests" [unitTests, propertyTests]
 
 unitTests :: TestTree
+
 unitTests =
   testGroup
     "Lib2 tests"
@@ -61,8 +63,7 @@ unitTests =
         let parsed = Lib3.parseStatements rendered
         parsed @?= Right (statements, "")
     ]
-    
-
+  
 
 propertyTests :: TestTree
 propertyTests = testGroup "some meaningful name"
@@ -70,3 +71,4 @@ propertyTests = testGroup "some meaningful name"
     QC.testProperty "sort == sort . reverse" $
       \list -> sort (list :: [Int]) == sort (reverse list)
   ]
+

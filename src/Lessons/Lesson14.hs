@@ -41,7 +41,5 @@ instance Monad m => Monad (EitherT e m) where
       Left e1 -> return $ Left e1
       Right r1 -> runEitherT (k r1)
 
-
-
 throwE :: Monad m => e -> EitherT e m a
 throwE e = EitherT $ return $ Left e

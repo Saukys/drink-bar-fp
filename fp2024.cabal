@@ -80,6 +80,7 @@ executable fp2024-four-client
     , free
     , lens
     , mtl
+    , lens
     , repline
     , string-conversions
     , wreq

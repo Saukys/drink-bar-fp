@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main (main) where
 
+
 import Control.Monad.IO.Class (liftIO)
 import Control.Concurrent (forkIO)
 import Control.Concurrent.Chan (Chan, newChan)
@@ -33,3 +34,4 @@ parseInput state storageChan input = case Lib3.parseCommand input of
       Left e -> return e
       Right mb -> return $ fromMaybe "Success" mb
   Right (_, str) -> return $ "Could not parse: " ++ str
+
