@@ -70,7 +70,7 @@ runHttpSingle (Free (ShowIngredients f)) = do
     resp <- post "http://localhost:3000" (cs "ingredients()" :: ByteString)
     runHttpSingle $ f $ cs $ resp ^. responseBody
 runHttpSingle (Free (ShowMoney f)) = do
-    resp <- post "http://localhost:3000" (cs "profit()" :: ByteString)
+    resp <- post "http://localhost:3000" (cs "profits()" :: ByteString)
     runHttpSingle $ f $ cs $ resp ^. responseBody
 
 runHttpBatch :: ProgramDSL a -> IO a
@@ -106,7 +106,7 @@ runHttpBatch' acc (Free (ShowMoney f)) = do
         putStrLn $ "Batched requests: " ++ unlines acc
         _ <- post "http://localhost:3000" (cs $ unlines acc :: ByteString)
         return ()
-    resp <- post "http://localhost:3000" (cs "profit()" :: ByteString)
+    resp <- post "http://localhost:3000" (cs "profits()" :: ByteString)
     runHttpBatch' [] (f $ cs $ resp ^. responseBody)
 
 type InMemoryState = ([(String, Double, [(String, String)])], Double, [(String, String)])
@@ -141,30 +141,36 @@ runInMemory (Free (ShowMoney f)) = do
 
 main :: IO ()
 main = do
-    args <- getArgs
-    let program = do
-            addIngredient "1000 ml" "vodka"
-            addIngredient "1000 ml" "orange juice"
-            createDrink "screwdriver" 5 [("10 ml", "vodka"), ("10 ml", "orange juice")]
-            _ <- showMenu
-            serveDrink "screwdriver" 5 [("10 ml", "vodka"), ("10 ml", "orange juice")]
-            addMoney 5
-            _ <- showMoney
-            showIngredients
+        args <- getArgs
+        let program = do
+                addIngredient "1000 ml" "vodka"
+                addIngredient "1000 ml" "orange juice"
+                createDrink "screwdriver" 5 [("10 ml", "vodka"), ("10 ml", "orange juice")]
+                menu <- showMenu
+                serveDrink "screwdriver" 5 [("10 ml", "vodka"), ("10 ml", "orange juice")]
+                addMoney 5
+                money <- showMoney
+                ingredients <- showIngredients
+                return (menu, money, ingredients)
 
-    case args of
-        ["http"] -> do
-            putStrLn "Running in HTTP mode"
-            _ <- runHttpSingle program
-            return ()
-        ["http-batch"] -> do
-            putStrLn "Running in HTTP batch mode"
-            _ <- runHttpBatch program
-            return ()
-        ["in-memory"] -> do
-            putStrLn "Running in in-memory mode"
-            (result, state) <- runStateT (runInMemory program) ([], 0, [])
-            print result
-            print state
-            return ()
-        _ -> putStrLn "Usage: stack exec fp2024-four-client (http|http-batch|in-memory)"
+        case args of
+            ["http"] -> do
+                putStrLn "Running in HTTP mode"
+                (menu, money, ingredients) <- runHttpSingle program
+                putStrLn menu
+                putStrLn money
+                putStrLn ingredients
+            ["http-batch"] -> do
+                putStrLn "Running in HTTP batch mode"
+                (menu, money, ingredients) <- runHttpBatch program
+                putStrLn menu
+                putStrLn money
+                putStrLn ingredients
+            ["in-memory"] -> do
+                putStrLn "Running in in-memory mode"
+                ((menu, money, ingredients), state) <- runStateT (runInMemory program) ([], 0, [])
+                putStrLn menu
+                putStrLn money
+                putStrLn ingredients
+                print state
+            _ -> putStrLn "Usage: stack exec fp2024-four-client (http|http-batch|in-memory)"

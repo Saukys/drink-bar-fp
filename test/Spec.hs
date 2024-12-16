@@ -30,16 +30,16 @@ unitTests =
       testCase "parseQuery menu" $
         Lib2.parseQuery "menu()" @?= Right Lib2.Menu,
       testCase "parseQuery show_ingredients()" $
-        Lib2.parseQuery "show_ingredients()" @?= Right Lib2.ShowIngredients,
+        Lib2.parseQuery "ingredients()" @?= Right Lib2.ShowIngredients,
       testCase "parseQuery add ingredient" $
         Lib2.parseQuery "add(10.0 ml ingredientName)"
           @?= Right (Lib2.AddIngredient (Lib2.Ingredient (Lib2.Quantity 10.0 Lib2.ML) "ingredientName")),
       testCase "parseQuery money" $
-        Lib2.parseQuery "money()" @?= Right Lib2.Money,
+        Lib2.parseQuery "profits()" @?= Right Lib2.Money,
       testCase "parseQuery debug" $
         Lib2.parseQuery "debug()" @?= Right Lib2.Debug,
       testCase "parseQuery money add" $
-        Lib2.parseQuery "add_money(10.0 EUR)" @?= Right (Lib2.MoneyAdd (Lib2.Price 10.0 Lib2.EUR)),
+        Lib2.parseQuery "earn_money(10.0 EUR)" @?= Right (Lib2.MoneyAdd (Lib2.Price 10.0 Lib2.EUR)),
       testCase "SaveCommand state transition" $ do
         initialState <- newTVarIO Lib2.emptyState
         ioChan <- newChan
